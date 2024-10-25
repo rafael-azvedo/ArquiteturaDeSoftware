@@ -26,14 +26,13 @@ workspace "Facom em Foco" "GRUPO C" {
                 
             }
             
-            webSPA = container "webSPA" "pagina administrativa" "" Web
             
             webApp = container "FacomEmFoco Web" "Aplicação monolítica, responsável pelas regras de negócio, lógica de acesso aos dados e interface frontend. Provê serviços para o aplicativo mobile FacomEmFoco_Mobile e possui a funcionalidade de gerar relatórios." "Java, JavaScript"{
                 tags "Web"
                 
                 primary = group "Primary" {
-                    adminApplication = component "admin application" "" "" Package
-                    generalApplication = component "general application" "" "" Package
+                    view = component "view" "" "" Package
+                    viewModel = component "viewModel" "" "" Package
                     api = component "api" "" "" Package
                 }
                 
@@ -56,13 +55,14 @@ workspace "Facom em Foco" "GRUPO C" {
         }
         
         userC -> FEF.mobileApp "Le postagens em" ""
+        userC -> FEF.webApp.view "Le postagens em" ""
         userP -> FEF.mobileApp "Le e faz postagens em" ""
-        userP -> FEF.webApp "Le e faz postagens em" "" Curvada
-        userM -> FEF.webApp "Le e faz postagens em" "" 
-        userM -> FEF.webApp "Gerencia postagens e perfis em" "" 
+        userP -> FEF.webApp.view "Le e faz postagens em" "" Curvada
+        userM -> FEF.webApp.view "Le e faz postagens em" "" 
+        userM -> FEF.webApp.view "Gerencia postagens e perfis em" "" 
         
         FEF.mobileApp -> FEF.webApp "faz chamadas" "[REST/JSON]" Curvada
-        fireBase -> FEF.mobileApp.model "notifica" "" Curvada
+        fireBase -> FEF.mobileApp.model "notifica" "" Angulada
         
         
         FEF.webApp -> FEF.db "acessa dados em" "SQL" Curvada
@@ -78,11 +78,10 @@ workspace "Facom em Foco" "GRUPO C" {
         FEF.mobileApp.model -> FEF.mobileApp.view "atualiza" "" 
         FEF.mobileApp.model -> FEF.webApp.api "acessa API do" "REST/JSON"
         
-        FEF.webSPA -> FEF.webApp.adminApplication
         
-        FEF.webApp.adminApplication -> FEF.webApp.useCases
-        FEF.webApp.api -> FEF.webApp.useCases
-        FEF.webApp.generalApplication -> FEF.webApp.useCases
+        FEF.webApp.api -> FEF.webApp.useCases "" "" Curvada
+        FEF.webApp.view -> FEF.webApp.viewModel
+        FEF.webApp.viewModel -> FEF.webApp.useCases
         
         
         FEF.webApp.autentication -> passaporteUfms
@@ -92,7 +91,7 @@ workspace "Facom em Foco" "GRUPO C" {
         FEF.webApp.useCases -> FEF.webApp.entities
         FEF.webApp.useCases -> FEF.webApp.Dao
         FEF.webApp.useCases -> FEF.webApp.autentication
-        FEF.webApp.useCases -> FEF.webApp.notification
+        FEF.webApp.useCases -> FEF.webApp.notification "" "" Curvada
         
         FEF.webApp.Dao -> FEF.webApp.entities
         FEF.webApp.Dao -> FEF.webApp.repository "" "" Curvada
