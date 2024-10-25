@@ -1,0 +1,183 @@
+workspace "Facom em Foco" "GRUPO C" {
+    
+    !identifiers hierarchical
+
+   model {
+   
+        // usuários
+        userC = person "Usuario" "Pessoa que acessa o sistema para ler noticias"
+        userP = person "Professor" "Usuario que posta e edita noticias"
+        userM = person "Moderador" "Usuario que tem controle sobre postagens e cadastro de professores"
+        
+        
+        // sistemas externos
+        fireBase = softwareSystem "Firebase Cloud Messaging" "Sistema externo de notificacao utilizado pelo sistema Facom em Foco" ExternalSoftwareSystem
+        passaporteUfms = softwareSystem "Passaporte UFMS" "Sistema externo de autenticacao de usuarios" ExternalSoftwareSystem
+
+        
+        FEF = softwareSystem "Sistema FacomEmFoco" "Sistema de compartilhamento de noticias"{
+           
+            mobileApp = container "FacomEmFoco Mobile" "Aplicação mobile instalada nos dispositivos moveis dos clientes" "Java, JavaFX" {
+                tags "Mobile"
+                
+                model = component "Model" "" "Flutter" Package
+                view = component "View" "" "Flutter" Package
+                controller = component "Controller" "" "Flutter" Package
+                
+            }
+            
+            webSPA = container "webSPA" "pagina administrativa" "" Web
+            
+            webApp = container "FacomEmFoco Web" "Aplicação monolítica, responsável pelas regras de negócio, lógica de acesso aos dados e interface frontend. Provê serviços para o aplicativo mobile FacomEmFoco_Mobile e possui a funcionalidade de gerar relatórios." "Java, JavaScript"{
+                tags "Web"
+                
+                primary = group "Primary" {
+                    adminApplication = component "admin application" "" "" Package
+                    generalApplication = component "general application" "" "" Package
+                    api = component "api" "" "" Package
+                }
+                
+                domain = group "Domain" {
+                    useCases = component "useCases" "" "" Package
+                    entities = component "entities" "" "" Package
+                    DAO = component "DAO" "" "" Package
+                }
+                
+                secundary = group "Secundary" {
+                    repository = component "repository" "" "" Package
+                    autentication = component "autentication" "" "" Package
+                    notification = component "notification" "" "" Package
+                }
+                
+                
+            }
+            
+            db = container "FacomEmFoco_DB" "Armazena os dados do sistema FacomEmFoco" "PostgreSQL" Database
+        }
+        
+        userC -> FEF.mobileApp "Le postagens em" ""
+        userP -> FEF.mobileApp "Le e faz postagens em" ""
+        userP -> FEF.webApp "Le e faz postagens em" "" Curvada
+        userM -> FEF.webApp "Le e faz postagens em" "" 
+        userM -> FEF.webApp "Gerencia postagens e perfis em" "" 
+        
+        FEF.mobileApp -> FEF.webApp "faz chamadas" "[REST/JSON]" Curvada
+        fireBase -> FEF.mobileApp.model "notifica" "" Curvada
+        
+        
+        FEF.webApp -> FEF.db "acessa dados em" "SQL" Curvada
+        FEF.webApp -> passaporteUfms "autentica usuários em "" Curvada
+        FEF.webApp -> fireBase "notifica via" ""
+
+
+        userC -> FEF.mobileApp.view "interage com" "" Curvada
+        FEF.mobileApp.view ->  FEF.mobileApp.controller "dispara eventos para" ""
+        FEF.mobileApp.controller ->  FEF.mobileApp.view "seleciona a próxima view" "" Curvada
+        FEF.mobileApp.controller ->  FEF.mobileApp.model "invoca" ""
+        FEF.mobileApp.view -> FEF.mobileApp.model "acessa" "" Curvada 
+        FEF.mobileApp.model -> FEF.mobileApp.view "atualiza" "" 
+        FEF.mobileApp.model -> FEF.webApp.api "acessa API do" "REST/JSON"
+        
+        FEF.webSPA -> FEF.webApp.adminApplication
+        
+        FEF.webApp.adminApplication -> FEF.webApp.useCases
+        FEF.webApp.api -> FEF.webApp.useCases
+        FEF.webApp.generalApplication -> FEF.webApp.useCases
+        
+        
+        FEF.webApp.autentication -> passaporteUfms
+        FEF.webApp.notification -> fireBase
+        FEF.webApp.repository -> FEF.db
+        
+        FEF.webApp.useCases -> FEF.webApp.entities
+        FEF.webApp.useCases -> FEF.webApp.Dao
+        FEF.webApp.useCases -> FEF.webApp.autentication
+        FEF.webApp.useCases -> FEF.webApp.notification
+        
+        FEF.webApp.Dao -> FEF.webApp.entities
+        FEF.webApp.Dao -> FEF.webApp.repository "" "" Curvada
+        
+        
+          
+        
+       
+    }
+
+    views {
+
+        systemContext FEF "C4-Level-1" "Diagrama de Contexto do sistema FacomEmFoco" {
+            include *
+        }
+
+        container FEF "C4-Level-2" "Diagrama de Containers do sistema FacomEmFoco" {
+            include *
+        }
+        component FEF.mobileApp "C4-Level-3-Mobile" {
+            include *
+        }
+        component FEF.webApp "C4-Level-3-Web" {
+            include *
+        }
+        
+        
+        
+        
+        styles {
+        element "Element" {
+                shape RoundedBox
+                color white
+            }
+            element "Person" {
+                shape person
+                 background  #64B5F6
+            }
+            element "Software System" {
+                 background  #42A5F5
+            }
+            
+             element "Container" {
+                 background  #4FC3F7
+                 //background  #E97132
+                 
+            }
+             element "Component" {
+                 background  #2196F3
+                 color #333333
+            }
+           element "ExternalSoftwareSystem" {
+                background #888888
+            }
+           element "Database" {
+                shape cylinder
+            }
+            element "Mobile" {
+                shape MobileDeviceLandscape
+            }
+            element "Web" {
+                shape WebBrowser
+            }
+            element "Window" {
+                shape Window
+            }
+            element "Package" {
+                shape Folder
+            }
+            element "Infrastructure Node" {
+                 background  #A58DCF
+                 color #333333
+            }
+            relationship "Curvada"{
+                routing Curved
+            }
+            relationship "Angulada"{
+                routing Orthogonal 
+            } 
+            element "Group" {
+                shape Folder
+            }
+        }
+    }
+    
+   
+
+}
