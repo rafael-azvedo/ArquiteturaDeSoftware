@@ -24,6 +24,12 @@ workspace "Facom em Foco" "GRUPO C" {
                 view = component "View" "" "Flutter" Package
                 controller = component "Controller" "" "Flutter" Package
                 
+                FEF.mobileApp.view ->  FEF.mobileApp.controller "dispara eventos para" ""
+                FEF.mobileApp.controller ->  FEF.mobileApp.view "seleciona a próxima view" "" Curvada
+                FEF.mobileApp.controller ->  FEF.mobileApp.model "invoca" ""
+                FEF.mobileApp.view -> FEF.mobileApp.model "acessa" "" Curvada 
+                FEF.mobileApp.model -> FEF.mobileApp.view "atualiza" "" 
+                
             }
             
             
@@ -48,58 +54,40 @@ workspace "Facom em Foco" "GRUPO C" {
                     notification = component "notification" "" "" Package
                 }
                 
+                    FEF.webApp.api -> FEF.webApp.useCases "" "" Curvada
+                    FEF.webApp.view -> FEF.webApp.viewModel
+                    FEF.webApp.viewModel -> FEF.webApp.useCases
+                
+                    FEF.webApp.useCases -> FEF.webApp.entities
+                    FEF.webApp.useCases -> FEF.webApp.Dao
+                    FEF.webApp.useCases -> FEF.webApp.autentication
+                    FEF.webApp.useCases -> FEF.webApp.notification "" "" Curvada
+                    
+                    FEF.webApp.Dao -> FEF.webApp.entities
+                    FEF.webApp.Dao -> FEF.webApp.repository "" "" Curvada
+                
                 
             }
             
             db = container "FacomEmFoco_DB" "Armazena os dados do sistema FacomEmFoco" "PostgreSQL" Database
         }
         
-        userC -> FEF.mobileApp "Le postagens em" ""
-        userC -> FEF.webApp.view "Le postagens em" ""
+        userC -> FEF.webApp.view "Le postagens em" "" Curvada
+        userC -> FEF.mobileApp.view "Le postagens em" "" 
         userP -> FEF.mobileApp "Le e faz postagens em" ""
         userP -> FEF.webApp.view "Le e faz postagens em" "" Curvada
-        userM -> FEF.webApp.view "Le e faz postagens em" "" 
+        userM -> FEF.webApp.view "Le e faz postagens em" "" Curvada
         userM -> FEF.webApp.view "Gerencia postagens e perfis em" "" 
         
         FEF.mobileApp -> FEF.webApp "faz chamadas" "[REST/JSON]" Curvada
         fireBase -> FEF.mobileApp.model "notifica" "" Angulada
-        
-        
-        FEF.webApp -> FEF.db "acessa dados em" "SQL" Curvada
-        FEF.webApp -> passaporteUfms "autentica usuários em "" Curvada
-        FEF.webApp -> fireBase "notifica via" ""
-
-
-        userC -> FEF.mobileApp.view "interage com" "" Curvada
-        FEF.mobileApp.view ->  FEF.mobileApp.controller "dispara eventos para" ""
-        FEF.mobileApp.controller ->  FEF.mobileApp.view "seleciona a próxima view" "" Curvada
-        FEF.mobileApp.controller ->  FEF.mobileApp.model "invoca" ""
-        FEF.mobileApp.view -> FEF.mobileApp.model "acessa" "" Curvada 
-        FEF.mobileApp.model -> FEF.mobileApp.view "atualiza" "" 
         FEF.mobileApp.model -> FEF.webApp.api "acessa API do" "REST/JSON"
         
         
-        FEF.webApp.api -> FEF.webApp.useCases "" "" Curvada
-        FEF.webApp.view -> FEF.webApp.viewModel
-        FEF.webApp.viewModel -> FEF.webApp.useCases
-        
-        
-        FEF.webApp.autentication -> passaporteUfms
-        FEF.webApp.notification -> fireBase
-        FEF.webApp.repository -> FEF.db
-        
-        FEF.webApp.useCases -> FEF.webApp.entities
-        FEF.webApp.useCases -> FEF.webApp.Dao
-        FEF.webApp.useCases -> FEF.webApp.autentication
-        FEF.webApp.useCases -> FEF.webApp.notification "" "" Curvada
-        
-        FEF.webApp.Dao -> FEF.webApp.entities
-        FEF.webApp.Dao -> FEF.webApp.repository "" "" Curvada
-        
-        
-          
-        
-       
+        FEF.webApp.repository -> FEF.db "acessa dados em" "SQL" Curvada
+        FEF.webApp.autentication -> passaporteUfms "autentica usuários em "" Curvada
+        FEF.webApp.notification -> fireBase "notifica via" ""
+
     }
 
     views {
